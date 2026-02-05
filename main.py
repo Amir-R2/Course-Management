@@ -2,49 +2,6 @@ import os
 import csv
 
 
-def insert_header_to_csv(*headers, csv_file_name: None | str = None):
-    if csv_file_name is None:
-        csv_file_name = "course management.csv"
-    with open(csv_file_name, 'a', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=headers)
-        writer.writeheader()
-        return headers
-
-
-def insert_data_to_csv(data, *headers, csv_file_name: None | str = None):
-    if csv_file_name is None:
-        csv_file_name = "course management.csv"
-    with open(csv_file_name, 'a', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=headers)
-        writer.writerows([data])
-
-
-def insert_seperator_to_csv(csv_file_name: None | str = None, seperation_count=5):
-    if csv_file_name is None:
-        csv_file_name = "course management.csv"
-    with open(csv_file_name, 'a', newline='') as csvfile:
-        for index in range(seperation_count):
-            csvfile.write("\n,,,,,,\n")
-
-
-def csv_assembeler(course_list, student_list):
-    for i in range(len(course_list)):
-        if i >= 1:
-            insert_seperator_to_csv()
-        insert_header_to_csv('ID', 'Course Name', 'Start Date',
-                             'End Date', 'Session Count')
-        insert_data_to_csv(course_list[i],
-                           'ID', 'Course Name', 'Start Date',
-                           'End Date', 'Session Count')
-        insert_header_to_csv("course id", "name", "last name",
-                             "age", "phone number")
-        for j in range(len(student_list)):
-            if student_list[j]["course id"] == course_list[i]["ID"]:
-                insert_data_to_csv(student_list[j],
-                                   "course id", "name", "last name",
-                                   "age", "phone number")
-
-
 def is_name(name):
     clean_name = name.replace(" ", "")
     if clean_name.isalpha():
@@ -65,8 +22,16 @@ def get_name(prompt: str | None = None):
 
 def is_date(date):
     split_date = date.split("/")
+    if len(split_date[0]) < 2 or len(split_date[0]) > 4:
+        return False
+    try:
+        split_date[0] = int(split_date[0])
+        split_date[1] = int(split_date[1])
+        split_date[2] = int(split_date[2])
+    except:
+        return False
     if len(split_date) == 3:
-        if (len(split_date[0]) <= 4 and len(split_date[0]) > 1) and len(split_date[1]) == 2 and len(split_date[2]) == 2:
+        if (split_date[0] in range(1900, 3000) or split_date[0] in range(0, 99)) and split_date[1] in range(1, 13) and split_date[2] in range(1, 32):
             return True
         return False
 
@@ -157,6 +122,13 @@ def add_student_score():
     pass
 
 
+def save_to_csv(data,  csv_file_name, *headers):
+    with open(csv_file_name, 'a', newline='') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=headers)
+        writer.writeheader()
+        writer.writerows(data)
+
+
 course_list = []
 student_list = []
 id = 0
@@ -175,4 +147,7 @@ if __name__ == "__main__":
         forward = input("Countinue (y or n)? ")
         if forward == "n":
             break
-    csv_assembeler(course_list, student_list)
+    save_to_csv(course_list, "Course List.csv", "ID", "Course Name",
+                "Start Date", "End Date", "Session Count")
+    save_to_csv(student_list, "Student List.csv", "course id", "name", "last name",
+                "age", "phone number")
