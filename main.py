@@ -1,6 +1,53 @@
+import os
+import csv
+
+
+def insert_header_to_csv(*headers, csv_file_name: None | str = None):
+    if csv_file_name is None:
+        csv_file_name = "course management.csv"
+    with open(csv_file_name, 'a', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=headers)
+        writer.writeheader()
+        return headers
+
+
+def insert_data_to_csv(data, *headers, csv_file_name: None | str = None):
+    if csv_file_name is None:
+        csv_file_name = "course management.csv"
+    with open(csv_file_name, 'a', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=headers)
+        writer.writerows([data])
+
+
+def insert_seperator_to_csv(csv_file_name: None | str = None, seperation_count=5):
+    if csv_file_name is None:
+        csv_file_name = "course management.csv"
+    with open(csv_file_name, 'a', newline='') as csvfile:
+        for index in range(seperation_count):
+            csvfile.write("\n,,,,,,\n")
+
+
+def csv_assembeler(course_list, student_list):
+    for i in range(len(course_list)):
+        if i >= 1:
+            insert_seperator_to_csv()
+        insert_header_to_csv('ID', 'Course Name', 'Start Date',
+                             'End Date', 'Session Count')
+        insert_data_to_csv(course_list[i],
+                           'ID', 'Course Name', 'Start Date',
+                           'End Date', 'Session Count')
+        insert_header_to_csv("course id", "name", "last name",
+                             "age", "phone number")
+        for j in range(len(student_list)):
+            if student_list[j]["course id"] == course_list[i]["ID"]:
+                insert_data_to_csv(student_list[j],
+                                   "course id", "name", "last name",
+                                   "age", "phone number")
+
 
 def is_name(name):
-    if name.isalpha():
+    clean_name = name.replace(" ", "")
+    if clean_name.isalpha():
         return True
     return False
 
@@ -90,7 +137,7 @@ def remove_course(id):
 
 def add_student(course_id):
     student_name = get_name("First Name: ")
-    student_name_last_name = get_name("Second Name: ")
+    student_name_last_name = get_name("Last Name: ")
     student_age = get_int("Age: ")
     student_phone_number = get_phone_number("Student Phone Number: ")
     student_info = {"course id": course_id, "name": student_name, "last name": student_name_last_name,
@@ -114,4 +161,18 @@ course_list = []
 student_list = []
 id = 0
 if __name__ == "__main__":
-    pass
+    while True:
+        id += 1
+        course_list.append(add_course(id))
+        forward = input("Countinue(y or n)? ")
+        if forward == "n":
+            break
+    while True:
+        count = get_int("Amount of students in this course: ")
+        id = get_int("Course ID: ")
+        for index in range(count):
+            student_list.append(add_student(id))
+        forward = input("Countinue (y or n)? ")
+        if forward == "n":
+            break
+    csv_assembeler(course_list, student_list)
