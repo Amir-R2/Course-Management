@@ -1,5 +1,7 @@
 import os
 import csv
+import uuid
+# bug: if the user adds a student to the 1st course , then adds students to the 2nd course and wants to add more students to the 1st course, the order will be ruined in the final csv file
 
 
 def is_name(name):
@@ -82,7 +84,7 @@ def get_phone_number(prompt: str | None = None):
 
 
 def add_course(id):
-    course_name = get_name("Course Name: ")
+    course_name = get_name("\nCourse Name: ")
     start_date = get_date("Start Date: ")
     end_date = get_date("End Date: ")
     session_count = get_int("Session Count: ")
@@ -101,31 +103,59 @@ def remove_course(id):
 
 
 def add_student(course_id):
-    student_name = get_name("First Name: ")
-    student_name_last_name = get_name("Last Name: ")
+    student_id = uuid.uuid4()
+    student_name = get_name("\nFirst Name: ")
+    student_last_name = get_name("Last Name: ")
     student_age = get_int("Age: ")
     student_phone_number = get_phone_number("Student Phone Number: ")
-    student_info = {"course id": course_id, "name": student_name, "last name": student_name_last_name,
+    student_info = {"course id": course_id, "student id": student_id, "name": student_name, "last name": student_last_name,
                     "age": student_age, "phone number": student_phone_number}
     return student_info
 
 
-def edit_student_info(id):
+def find_student(student_list, student_id):
+    for item in range(len(student_list)):
+        if student_list[item]["student id"] == student_id:
+            return item
+
+
+def edit_student_info(student_list, student_id):
+    choice = get_int(
+        " 1.Edit Name \n 2.Edit Last Name \n 3.Edit Age \n 4.Edit Phone Number \n 5.Exit\n")
+    choice = int(choice)
+    student_location = find_student(student_list, student_id)
+    if student_location is None:
+        return ("Student is not on the list")
+    if choice == 1:
+        student_list[student_location]["name"] = get_name(
+            "Edit First Name: ")
+    elif choice == 2:
+        student_list[student_location]["last name"] = get_name(
+            "Edit Last Name: ")
+    elif choice == 3:
+        student_list[student_location]["age"] = get_int("Edit Age: ")
+    elif choice == 4:
+        student_list[student_location]["phone number"] = get_phone_number(
+            "Edit Phone number: ")
+
+
+def remove_student(student_list, student_id):
     pass
 
 
-def remove_student(id):
+def add_student_score(student_list, student_id):
     pass
 
 
-def add_student_score():
+def student_rollcall(student_list, student_id):
     pass
 
 
 def save_to_csv(data,  csv_file_name, *headers):
     with open(csv_file_name, 'a', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=headers)
-        writer.writeheader()
+        if csv_file.tell() == 0:
+            writer.writeheader()
         writer.writerows(data)
 
 
@@ -134,20 +164,53 @@ student_list = []
 id = 0
 if __name__ == "__main__":
     while True:
-        id += 1
-        course_list.append(add_course(id))
-        forward = input("Countinue(y or n)? ")
-        if forward == "n":
+        choice = get_int(
+            "\nMenu:\n 1.Add Courses\n 2.Remove Course(Coming Soon!)\n 3.Edit Course Info(Coming Soon!)\n 4.Add Students\n 5.Edit Student Info\n 6.Remove Student(Coming Soon!)\n 7.Add Student Score(Coming Soon!)\n 8.Student Attendance(Coming Soon!)\n 9.Exit\n\n")
+        choice = int(choice)
+        if choice == 1:
+            while True:
+                id += 1
+                course_list.append(add_course(id))
+                forward = input("Countinue (y or n)? ")
+
+                if forward == "n":
+                    break
+
+        elif choice == 4:
+            if not course_list:
+                print("No Courses Available!")
+                continue
+            for index in range(len(course_list)):
+                print(course_list[index])
+            while True:
+                count = get_int("\nAmount of students in this course: ")
+                id = get_int("Course ID: ")
+                for index in range(count):
+                    student_list.append(add_student(id))
+                forward = input("Countinue (y or n)? ")
+                if forward == "n":
+                    break
+
+        elif choice == 5:
+            if not student_list:
+                print("No Students Added!")
+                continue
+            for index in range(len(student_list)):
+                print(student_list[index])
+            while True:
+                student_id = input("Student ID: ")
+                try:
+                    student_id = uuid.UUID(student_id)
+                    break
+                except:
+                    print("Invalid Student ID")
+            edit_student_info(student_list, student_id)
+        elif choice == 9:
             break
-    while True:
-        count = get_int("Amount of students in this course: ")
-        id = get_int("Course ID: ")
-        for index in range(count):
-            student_list.append(add_student(id))
-        forward = input("Countinue (y or n)? ")
-        if forward == "n":
-            break
-    save_to_csv(course_list, "Course List.csv", "ID", "Course Name",
+
+if course_list:
+    save_to_csv(course_list, "Course.csv", "ID", "Course Name",
                 "Start Date", "End Date", "Session Count")
-    save_to_csv(student_list, "Student List.csv", "course id", "name", "last name",
+if student_list:
+    save_to_csv(student_list, "Student.csv", "course id", "student id", "name", "last name",
                 "age", "phone number")
