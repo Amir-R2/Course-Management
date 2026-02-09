@@ -1,7 +1,6 @@
 import os
 import csv
 import uuid
-# bug: if the user adds a student to the 1st course , then adds students to the 2nd course and wants to add more students to the 1st course, the order will be ruined in the final csv file
 
 
 def is_name(name):
@@ -93,8 +92,35 @@ def add_course(id):
     return (course_info)
 
 
-def edit_course(id):
-    pass
+def find_course(course_list, course_id):
+    for item in range(len(course_list)):
+        if course_list[item]["ID"] == course_id:
+            return item
+
+
+def edit_course(course_list, course_id):
+    choice = get_int(
+        " 1.Edit Course Name \n 2.Edit Start Date \n 3.Edit End Date \n 4.Edit Session count \n 5.Exit\n")
+    course_location = find_course(course_list, course_id)
+    if course_location is None:
+        return ("Course is not on the list")
+    if choice == 1:
+        course_list[course_location]["Course Name"] = get_name(
+            "Edit Course Name: ")
+        print("Edit Successfull")
+    elif choice == 2:
+        course_list[course_location]["Start Date"] = get_date(
+            "Edit Start Date: ")
+        print("Edit Successfull")
+    elif choice == 3:
+        course_list[course_location]["End Date"] = get_date("Edit End Date: ")
+        print("Edit Successfull")
+    elif choice == 4:
+        course_list[course_location]["Session Count"] = get_int(
+            "Edit Session Count: ")
+        print("Edit Successfull")
+    else:
+        print("Invalid Input")
 
 
 def remove_course(id):
@@ -122,32 +148,38 @@ def find_student(student_list, student_id):
 def edit_student_info(student_list, student_id):
     choice = get_int(
         " 1.Edit Name \n 2.Edit Last Name \n 3.Edit Age \n 4.Edit Phone Number \n 5.Exit\n")
-    choice = int(choice)
     student_location = find_student(student_list, student_id)
     if student_location is None:
         return ("Student is not on the list")
     if choice == 1:
         student_list[student_location]["name"] = get_name(
             "Edit First Name: ")
+        print("Edit Successfull")
     elif choice == 2:
         student_list[student_location]["last name"] = get_name(
             "Edit Last Name: ")
+        print("Edit Successfull")
     elif choice == 3:
         student_list[student_location]["age"] = get_int("Edit Age: ")
+        print("Edit Successfull")
     elif choice == 4:
         student_list[student_location]["phone number"] = get_phone_number(
             "Edit Phone number: ")
+        print("Edit Successfull")
+    else:
+        print("Invalid Input")
 
 
 def remove_student(student_list, student_id):
-    pass
+    for item in range(len(student_list)):
+        print(student_list[item])
 
 
 def add_student_score(student_list, student_id):
     pass
 
 
-def student_rollcall(student_list, student_id):
+def student_attendance(student_list, student_id):
     pass
 
 
@@ -165,7 +197,7 @@ id = 0
 if __name__ == "__main__":
     while True:
         choice = get_int(
-            "\nMenu:\n 1.Add Courses\n 2.Remove Course(Coming Soon!)\n 3.Edit Course Info(Coming Soon!)\n 4.Add Students\n 5.Edit Student Info\n 6.Remove Student(Coming Soon!)\n 7.Add Student Score(Coming Soon!)\n 8.Student Attendance(Coming Soon!)\n 9.Exit\n\n")
+            "\nMenu:\n 1.Add Courses\n 2.Remove Course(Coming Soon!)\n 3.Edit Course Info\n 4.Add Students\n 5.Edit Student Info\n 6.Remove Student(Coming Soon!)\n 7.Add Student Score(Coming Soon!)\n 8.Student Attendance(Coming Soon!)\n 9.Exit\n\n")
         choice = int(choice)
         if choice == 1:
             while True:
@@ -175,6 +207,15 @@ if __name__ == "__main__":
 
                 if forward == "n":
                     break
+
+        if choice == 3:
+            if not course_list:
+                print("No Courses Added!")
+                continue
+            for index in range(len(course_list)):
+                print(course_list[index])
+            course_id = get_int("Course ID: ")
+            edit_course(course_list, course_id)
 
         elif choice == 4:
             if not course_list:
@@ -205,12 +246,15 @@ if __name__ == "__main__":
                 except:
                     print("Invalid Student ID")
             edit_student_info(student_list, student_id)
+
         elif choice == 9:
             break
 
 if course_list:
+    course_list = sorted(course_list, key=lambda x: x["ID"])
     save_to_csv(course_list, "Course.csv", "ID", "Course Name",
                 "Start Date", "End Date", "Session Count")
 if student_list:
+    student_list = sorted(student_list, key=lambda x: x["course id"])
     save_to_csv(student_list, "Student.csv", "course id", "student id", "name", "last name",
                 "age", "phone number")
