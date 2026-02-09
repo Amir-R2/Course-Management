@@ -119,13 +119,26 @@ def edit_course(course_list, course_id):
         course_list[course_location]["Session Count"] = get_int(
             "Edit Session Count: ")
         print("Edit Successfull")
+    elif choice == 5:
+        print("Exited Successfully")
+        return
     else:
         print("Invalid Input")
 
 
-def remove_course(id):
-    # this should -1 every id in the course list and student list
-    pass
+def remove_course(course_list, course_id, student_list):
+    course_location = find_course(course_list, course_id)
+    if course_location is None:
+        return ("Course is not on the list")
+    course_list.pop(course_location)
+    for index in range(len(course_list)):
+        if course_list[index]["ID"] == 1:
+            continue
+        course_list[index]["ID"] = course_list[index]["ID"] - 1
+    for index in range(len(student_list) - 1, -1, -1):
+        if student_list[index]["course id"] == course_id:
+            student_list.pop(index)
+    return student_list
 
 
 def add_student(course_id):
@@ -166,13 +179,18 @@ def edit_student_info(student_list, student_id):
         student_list[student_location]["phone number"] = get_phone_number(
             "Edit Phone number: ")
         print("Edit Successfull")
+    elif choice == 5:
+        print("Exited Successfully")
+        return
     else:
         print("Invalid Input")
 
 
 def remove_student(student_list, student_id):
-    for item in range(len(student_list)):
-        print(student_list[item])
+    student_location = find_student(student_list, student_id)
+    if student_location is None:
+        return ("Student is not on the list")
+    student_list.pop(student_location)
 
 
 def add_student_score(student_list, student_id):
@@ -197,7 +215,7 @@ id = 0
 if __name__ == "__main__":
     while True:
         choice = get_int(
-            "\nMenu:\n 1.Add Courses\n 2.Remove Course(Coming Soon!)\n 3.Edit Course Info\n 4.Add Students\n 5.Edit Student Info\n 6.Remove Student(Coming Soon!)\n 7.Add Student Score(Coming Soon!)\n 8.Student Attendance(Coming Soon!)\n 9.Exit\n\n")
+            "\nMenu:\n 1.Add Courses\n 2.Remove Course \n 3.Edit Course Info\n 4.Add Students\n 5.Edit Student Info\n 6.Remove Student \n 7.Add Student Score(Coming Soon!)\n 8.Student Attendance(Coming Soon!)\n 9.Exit\n\n")
         choice = int(choice)
         if choice == 1:
             while True:
@@ -208,7 +226,22 @@ if __name__ == "__main__":
                 if forward == "n":
                     break
 
-        if choice == 3:
+        elif choice == 2:
+            if not course_list:
+                print("No Courses Added!")
+                continue
+            for index in range(len(course_list)):
+                print(course_list[index])
+            course_id = get_int("Course ID: ")
+            new_student_list = remove_course(
+                course_list, course_id, student_list)
+            if type(new_student_list) is str:
+                print(new_student_list)
+                continue
+            else:
+                student_list = new_student_list
+
+        elif choice == 3:
             if not course_list:
                 print("No Courses Added!")
                 continue
@@ -246,6 +279,21 @@ if __name__ == "__main__":
                 except:
                     print("Invalid Student ID")
             edit_student_info(student_list, student_id)
+
+        elif choice == 6:
+            if not student_list:
+                print("No Students Added!")
+                continue
+            for index in range(len(student_list)):
+                print(student_list[index])
+            while True:
+                student_id = input("Student ID: ")
+                try:
+                    student_id = uuid.UUID(student_id)
+                    break
+                except:
+                    print("Invalid Student ID")
+            remove_student(student_list, student_id)
 
         elif choice == 9:
             break
